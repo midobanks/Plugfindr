@@ -1,0 +1,11 @@
+{
+  "name": "@plugfindr/adapters",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@plugfindr/domain": "0.1.0"
+  }
+}

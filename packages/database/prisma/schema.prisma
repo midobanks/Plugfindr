@@ -1,0 +1,425 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  business
+  specialist
+  reviewer
+  matcher
+  trust_safety
+  support
+  admin
+  finance
+}
+
+enum ProfileStatus {
+  pending
+  approved
+  suspended
+}
+
+enum VerificationType {
+  identity
+  contact
+  portfolio
+  credentials
+  reference
+  skill
+  proven
+  business
+}
+
+enum VerificationState {
+  not_started
+  submitted
+  in_review
+  approved
+  rejected
+  needs_more_info
+  expired
+}
+
+enum RequestState {
+  submitted
+  matching
+  matches_ready
+  in_conversation
+  hired
+  closed
+}
+
+enum IntroductionStatus {
+  requested
+  accepted
+  declined
+  expired
+}
+
+enum EngagementStatus {
+  introduced
+  in_discussion
+  hired
+  in_progress
+  completed
+  not_proceeding
+}
+
+enum ReportState {
+  open
+  in_review
+  resolved
+  dismissed
+}
+
+model User {
+  id            String   @id @default(uuid())
+  role          UserRole
+  displayName   String
+  email         String?  @unique
+  phone         String?  @unique
+  passwordHash  String?
+  googleSubject String?  @unique
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  businessProfile   BusinessProfile?
+  specialistProfile SpecialistProfile?
+  sentMessages      Message[]
+  reviews           Review[]
+  reports           Report[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+}
+
+model BusinessProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  name      String
+  type      String?
+  industry  String?
+  size      String?
+  location  String?
+  website   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id])
+  requests      Request[]
+  introductions Introduction[]
+  engagements   Engagement[]
+  verifications Verification[]
+}
+
+model SpecialistProfile {
+  id              String        @id @default(uuid())
+  userId          String        @unique
+  status          ProfileStatus @default(pending)
+  headline        String
+  bio             String?
+  yearsExperience Int?
+  location        String?
+  timeZone        String        @default("Africa/Lagos")
+  availability    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?
+
+  user           User              @relation(fields: [userId], references: [id])
+  contactDetail  ContactDetail?
+  skills         SpecialistSkill[]
+  portfolioItems PortfolioItem[]
+  credentials    Credential[]
+  verifications  Verification[]
+  matches        Match[]
+  introductions  Introduction[]
+  engagements    Engagement[]
+
+  @@index([status])
+}
+
+model ContactDetail {
+  id                   String   @id @default(uuid())
+  specialistProfileId  String   @unique
+  email                String?
+  phone                String?
+  whatsapp             String?
+  isSharedBySpecialist Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  specialistProfile SpecialistProfile @relation(fields: [specialistProfileId], references: [id])
+}
+
+model Category {
+  id   String @id @default(uuid())
+  name String @unique
+  slug String @unique
+
+  skills   Skill[]
+  requests Request[]
+}
+
+model Skill {
+  id         String  @id @default(uuid())
+  name       String  @unique
+  categoryId String?
+
+  category    Category?         @relation(fields: [categoryId], references: [id])
+  specialists SpecialistSkill[]
+}
+
+model SpecialistSkill {
+  specialistProfileId String
+  skillId             String
+
+  specialistProfile SpecialistProfile @relation(fields: [specialistProfileId], references: [id])
+  skill             Skill             @relation(fields: [skillId], references: [id])
+
+  @@id([specialistProfileId, skillId])
+}
+
+model PortfolioItem {
+  id                  String   @id @default(uuid())
+  specialistProfileId String
+  title               String
+  description         String
+  role                String?
+  outcome             String?
+  link                String?
+  createdAt           DateTime @default(now())
+
+  specialistProfile SpecialistProfile @relation(fields: [specialistProfileId], references: [id])
+}
+
+model Credential {
+  id                  String    @id @default(uuid())
+  specialistProfileId String
+  title               String
+  issuer              String?
+  issuedAt            DateTime?
+  createdAt           DateTime  @default(now())
+
+  specialistProfile SpecialistProfile @relation(fields: [specialistProfileId], references: [id])
+}
+
+model Verification {
+  id                  String            @id @default(uuid())
+  specialistProfileId String?
+  businessProfileId   String?
+  type                VerificationType
+  status              VerificationState @default(not_started)
+  providerReference   String?
+  reviewerId          String?
+  reviewNote          String?
+  verifiedAt          DateTime?
+  expiresAt           DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  specialistProfile SpecialistProfile?   @relation(fields: [specialistProfileId], references: [id])
+  businessProfile   BusinessProfile?     @relation(fields: [businessProfileId], references: [id])
+  documents         VerificationDocument[]
+
+  @@index([status, expiresAt])
+  @@index([specialistProfileId, type])
+}
+
+model VerificationDocument {
+  id             String   @id @default(uuid())
+  verificationId String
+  storageKey     String
+  contentType    String
+  createdAt      DateTime @default(now())
+
+  verification Verification @relation(fields: [verificationId], references: [id])
+}
+
+model Request {
+  id                 String       @id @default(uuid())
+  businessProfileId  String
+  categoryId         String?
+  brief              String
+  scopeType          String
+  budgetKobo         Int?
+  currency           String       @default("NGN")
+  timeline           String?
+  locationPreference String?
+  status             RequestState @default(submitted)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id])
+  category        Category?       @relation(fields: [categoryId], references: [id])
+  matches         Match[]
+  introductions   Introduction[]
+
+  @@index([status, createdAt])
+}
+
+model Match {
+  id                  String   @id @default(uuid())
+  requestId           String
+  specialistProfileId String
+  score               Float?
+  reasons             Json
+  optedIn             Boolean  @default(false)
+  businessFeedback    String?
+  createdAt           DateTime @default(now())
+
+  request           Request         @relation(fields: [requestId], references: [id])
+  specialistProfile SpecialistProfile @relation(fields: [specialistProfileId], references: [id])
+  introductions     Introduction[]
+
+  @@index([requestId])
+}
+
+model Introduction {
+  id                  String             @id @default(uuid())
+  requestId           String?
+  matchId             String?
+  businessProfileId   String
+  specialistProfileId String
+  status              IntroductionStatus @default(requested)
+  respondedAt         DateTime?
+  expiresAt           DateTime?
+  createdAt           DateTime           @default(now())
+
+  request           Request?          @relation(fields: [requestId], references: [id])
+  match             Match?            @relation(fields: [matchId], references: [id])
+  businessProfile   BusinessProfile   @relation(fields: [businessProfileId], references: [id])
+  specialistProfile SpecialistProfile @relation(fields: [specialistProfileId], references: [id])
+  conversation      Conversation?
+  engagement        Engagement?
+
+  @@index([specialistProfileId, status])
+}
+
+model Conversation {
+  id             String   @id @default(uuid())
+  introductionId String   @unique
+  createdAt      DateTime @default(now())
+
+  introduction Introduction @relation(fields: [introductionId], references: [id])
+  messages     Message[]
+}
+
+model Message {
+  id             String    @id @default(uuid())
+  conversationId String
+  senderId       String
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  sender       User          @relation(fields: [senderId], references: [id])
+}
+
+model Engagement {
+  id                  String           @id @default(uuid())
+  introductionId      String           @unique
+  businessProfileId   String
+  specialistProfileId String
+  status              EngagementStatus @default(introduced)
+  amountKobo          Int?
+  currency            String           @default("NGN")
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  introduction      Introduction   @relation(fields: [introductionId], references: [id])
+  businessProfile   BusinessProfile @relation(fields: [businessProfileId], references: [id])
+  specialistProfile SpecialistProfile @relation(fields: [specialistProfileId], references: [id])
+  proposals         Proposal[]
+  transactions      Transaction[]
+  reviews           Review[]
+}
+
+model Proposal {
+  id          String   @id @default(uuid())
+  engagementId String
+  scope       String
+  deliverables String
+  timeline    String?
+  amountKobo  Int
+  currency    String   @default("NGN")
+  status      String   @default("submitted")
+  createdAt   DateTime @default(now())
+
+  engagement Engagement @relation(fields: [engagementId], references: [id])
+}
+
+model Transaction {
+  id                String   @id @default(uuid())
+  engagementId      String
+  amountKobo        Int
+  currency          String   @default("NGN")
+  providerReference String?
+  status            String   @default("pending")
+  createdAt         DateTime @default(now())
+
+  engagement Engagement @relation(fields: [engagementId], references: [id])
+}
+
+model Review {
+  id              String   @id @default(uuid())
+  engagementId    String   @unique
+  authorId        String
+  rating          Int
+  quality         Int
+  communication   Int
+  reliability     Int
+  value           Int
+  comment         String?
+  privateFeedback String?
+  createdAt       DateTime @default(now())
+
+  engagement Engagement @relation(fields: [engagementId], references: [id])
+  author     User       @relation(fields: [authorId], references: [id])
+}
+
+model Report {
+  id          String      @id @default(uuid())
+  reporterId  String
+  subjectType String
+  subjectId   String
+  reason      String
+  status      ReportState @default(open)
+  createdAt   DateTime    @default(now())
+
+  reporter User @relation(fields: [reporterId], references: [id])
+
+  @@index([status, createdAt])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  payload   Json
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorId     String
+  action      String
+  subjectType String
+  subjectId   String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  actor User @relation(fields: [actorId], references: [id])
+
+  @@index([createdAt])
+}
