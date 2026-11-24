@@ -213,6 +213,197 @@ main {
   }
 }
 
+.primary-button,
+.secondary-button,
+.nav-cta {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primary-button {
+  border: 1px solid var(--brand);
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+.primary-button:hover:not(:disabled) {
+  background: var(--brand-hover);
+}
+
+.primary-button:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.secondary-button {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.nav-cta {
+  min-height: 44px;
+  border: 1px solid var(--brand);
+  color: var(--brand);
+  padding: 8px 14px;
+}
+
+.site-nav {
+  gap: 12px;
+}
+
+.empty-state {
+  margin-top: 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-soft);
+  padding: 24px;
+}
+
+.empty-state h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.request-page {
+  padding: 48px 0 96px;
+}
+
+.request-page h1 {
+  margin: 0 0 12px;
+}
+
+.page-support {
+  max-width: 44rem;
+  color: var(--text-muted);
+}
+
+.request-form {
+  max-width: 44rem;
+  margin-top: 32px;
+}
+
+.request-form fieldset {
+  margin: 0 0 32px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.request-form legend,
+.request-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.request-form label:not(:first-of-type) {
+  margin-top: 20px;
+}
+
+.nested-fieldset {
+  margin-top: 24px;
+  padding: 16px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-weight: 400;
+}
+
+.checkbox-label input {
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  margin: 0;
+}
+
+.budget-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+
+.request-form input:not([type='checkbox']),
+.request-form select,
+.request-form textarea {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 12px;
+  font: inherit;
+}
+
+.request-form textarea {
+  resize: vertical;
+}
+
+.field-hint {
+  margin: -4px 0 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.form-status {
+  min-height: 24px;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.step-label {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.request-confirmation {
+  max-width: 44rem;
+  margin-top: 32px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-soft);
+  padding: 24px;
+}
+
+.receipt {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .budget-range {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

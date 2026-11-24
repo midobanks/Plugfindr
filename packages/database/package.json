@@ -15,6 +15,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@plugfindr/adapters": "0.1.0",
+    "@plugfindr/domain": "0.1.0",
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
     "dotenv": "^17.0.0",

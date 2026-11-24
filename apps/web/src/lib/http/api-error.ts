@@ -1,10 +1,17 @@
-import { AuthenticationError, AuthorizationError, ValidationError } from '@plugfindr/domain';
+import {
+  AuthenticationError,
+  AuthorizationError,
+  RateLimitError,
+  ServiceUnavailableError,
+  ValidationError,
+} from '@plugfindr/domain';
 import { enNG } from '../../i18n/messages/en-NG';
 
 export type ApiErrorBody = {
   readonly code: string;
   readonly message: string;
   readonly requestId: string;
+  readonly details?: { readonly retryAfterSeconds: number };
 };
 
 export type ApiErrorResponse = {
@@ -16,11 +23,7 @@ export function toApiError(error: unknown, requestId: string): ApiErrorResponse 
   if (error instanceof AuthenticationError) {
     return {
       status: 401,
-      body: {
-        code: error.code,
-        message: enNG.errors.unauthenticated,
-        requestId,
-      },
+      body: { code: error.code, message: enNG.errors.unauthenticated, requestId },
     };
   }
   if (error instanceof AuthorizationError) {
@@ -33,6 +36,23 @@ export function toApiError(error: unknown, requestId: string): ApiErrorResponse 
     return {
       status: 400,
       body: { code: error.code, message: enNG.errors.validation, requestId },
+    };
+  }
+  if (error instanceof RateLimitError) {
+    return {
+      status: 429,
+      body: {
+        code: error.code,
+        message: enNG.errors.rateLimited,
+        requestId,
+        details: { retryAfterSeconds: error.retryAfterSeconds },
+      },
+    };
+  }
+  if (error instanceof ServiceUnavailableError) {
+    return {
+      status: 503,
+      body: { code: error.code, message: enNG.errors.unavailable, requestId },
     };
   }
   return {

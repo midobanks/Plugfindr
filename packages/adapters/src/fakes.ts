@@ -1,5 +1,11 @@
 import { asId, isSessionActive } from '@plugfindr/domain';
-import type { AuthMethod, Session, UserId, UserRole } from '@plugfindr/domain';
+import type {
+  AuthMethod,
+  Session,
+  UserId,
+  UserRole,
+  ValidatedRequestBrief,
+} from '@plugfindr/domain';
 import type {
   EmailPasswordVerifier,
   GoogleIdentity,
@@ -11,6 +17,7 @@ import type {
   RateLimiter,
   SessionStore,
 } from './auth';
+import type { RequestReceipt, RequestStore } from './requests';
 import type { CalendarProvider } from './calendar';
 import type { BookingLinkInput } from './calendar';
 import type { KycCheckInput, KycCheckResult, KycProvider } from './kyc';
@@ -279,6 +286,30 @@ export class FakeSessionStore implements SessionStore {
 
   async revoke(sessionId: string): Promise<void> {
     this.sessions.delete(sessionId);
+  }
+}
+
+export class FakeRequestStore implements RequestStore {
+  private readonly receipts: RequestReceipt[] = [];
+  private counter = 0;
+
+  async create(input: {
+    actorId: UserId;
+    brief: ValidatedRequestBrief;
+    submittedAt: Date;
+  }): Promise<RequestReceipt> {
+    this.counter += 1;
+    const receipt: RequestReceipt = {
+      id: `request-fake-${this.counter}`,
+      status: 'submitted',
+      submittedAt: input.submittedAt,
+    };
+    this.receipts.push(receipt);
+    return receipt;
+  }
+
+  created(): readonly RequestReceipt[] {
+    return this.receipts;
   }
 }
 

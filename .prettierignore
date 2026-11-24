@@ -6,3 +6,4 @@ package-lock.json
 *.svg
 *.sql
 next-env.d.ts
+DESIGN.md

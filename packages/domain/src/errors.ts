@@ -1,5 +1,10 @@
 export type DomainErrorCode =
-  'INVALID_TRANSITION' | 'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'FORBIDDEN';
+  | 'INVALID_TRANSITION'
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'FORBIDDEN'
+  | 'RATE_LIMITED'
+  | 'SERVICE_UNAVAILABLE';
 
 export class DomainError extends Error {
   readonly code: DomainErrorCode;
@@ -36,5 +41,22 @@ export class AuthorizationError extends DomainError {
   constructor() {
     super('FORBIDDEN', 'This action is not permitted');
     this.name = 'AuthorizationError';
+  }
+}
+
+export class RateLimitError extends DomainError {
+  readonly retryAfterSeconds: number;
+
+  constructor(retryAfterSeconds: number) {
+    super('RATE_LIMITED', 'Too many requests');
+    this.name = 'RateLimitError';
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
+}
+
+export class ServiceUnavailableError extends DomainError {
+  constructor() {
+    super('SERVICE_UNAVAILABLE', 'This service is not available yet');
+    this.name = 'ServiceUnavailableError';
   }
 }

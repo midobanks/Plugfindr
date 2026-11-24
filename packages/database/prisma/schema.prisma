@@ -249,9 +249,15 @@ model Request {
   brief              String
   scopeType          String
   budgetKobo         Int?
+  budgetMaxKobo      Int?
+  budgetIsFlexible   Boolean      @default(false)
   currency           String       @default("NGN")
   timeline           String?
+  startDate          DateTime?
   locationPreference String?
+  mustHaveSkills     String[]     @default([])
+  niceToHaveSkills   String[]     @default([])
+  attachmentLinks    String[]     @default([])
   status             RequestState @default(submitted)
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
