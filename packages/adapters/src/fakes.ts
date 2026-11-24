@@ -27,6 +27,8 @@ import type {
   Review,
   ReviewId,
   EngagementId,
+  Report,
+  ReportId,
 } from '@plugfindr/domain';
 import type {
   EmailPasswordVerifier,
@@ -40,6 +42,7 @@ import type {
   SessionStore,
 } from './auth';
 import type { AuditStore } from './audit';
+import type { ReportStore } from './reports';
 import type { RequestReceipt, RequestStore } from './requests';
 import type { SpecialistProfileReceipt, SpecialistProfileStore } from './specialists';
 import type { MatchStore } from './matches';
@@ -340,6 +343,29 @@ export class FakeAuditStore implements AuditStore {
     return this.events.filter(
       (event) => event.targetType === targetType && event.targetId === targetId,
     );
+  }
+}
+
+export class FakeReportStore implements ReportStore {
+  private readonly reports = new Map<string, Report>();
+
+  async create(report: Report): Promise<Report> {
+    this.reports.set(report.id, report);
+    return report;
+  }
+
+  async get(id: ReportId): Promise<Report | null> {
+    return this.reports.get(id) ?? null;
+  }
+
+  async listByReporter(reporterId: UserId): Promise<readonly Report[]> {
+    return [...this.reports.values()].filter((report) => report.reporterId === reporterId);
+  }
+
+  async listForReview(): Promise<readonly Report[]> {
+    return [...this.reports.values()]
+      .filter((report) => report.status === 'open')
+      .sort((left, right) => left.slaDueAt.getTime() - right.slaDueAt.getTime());
   }
 }
 

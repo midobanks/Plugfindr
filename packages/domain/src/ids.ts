@@ -11,6 +11,7 @@ export type RequestId = Branded<'RequestId'>;
 export type MatchId = Branded<'MatchId'>;
 export type MatchFeedbackId = Branded<'MatchFeedbackId'>;
 export type AuditEventId = Branded<'AuditEventId'>;
+export type ReportId = Branded<'ReportId'>;
 export type ReviewId = Branded<'ReviewId'>;
 export type IntroductionId = Branded<'IntroductionId'>;
 export type ConversationThreadId = Branded<'ConversationThreadId'>;
