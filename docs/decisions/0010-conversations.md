@@ -26,5 +26,5 @@ return 503 until stores are configured. Message bodies are never logged.
 ## Consequences
 
 - Acceptance produces a stable thread ID that can be used by future messaging UIs.
-- Attachments, read-receipt delivery, notifications and retention enforcement remain separate slices.
+- Attachments, notification delivery and retention enforcement remain separate slices; read receipts are recorded participant-only.
 - A future provider can be swapped behind existing adapter boundaries without changing domain rules.

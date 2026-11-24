@@ -23,6 +23,7 @@ import type {
   ConversationMessage,
   ConversationThread,
   ConversationThreadId,
+  MessageId,
   Review,
   ReviewId,
   EngagementId,
@@ -512,6 +513,23 @@ export class FakeConversationStore implements ConversationStore {
   async addMessage(message: ConversationMessage): Promise<ConversationMessage> {
     this.messages.set(message.id, message);
     return message;
+  }
+
+  async getMessage(id: MessageId): Promise<ConversationMessage | null> {
+    return this.messages.get(id) ?? null;
+  }
+
+  async markRead(
+    id: MessageId,
+    actorId: UserId,
+    readAt: Date,
+  ): Promise<ConversationMessage | null> {
+    void actorId;
+    const message = this.messages.get(id);
+    if (message === undefined) return null;
+    const next: ConversationMessage = { ...message, readAt };
+    this.messages.set(id, next);
+    return next;
   }
 
   async listMessages(id: ConversationThreadId): Promise<readonly ConversationMessage[]> {

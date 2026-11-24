@@ -3,6 +3,8 @@ import type {
   ConversationThread,
   ConversationThreadId,
   IntroductionId,
+  MessageId,
+  UserId,
 } from '@plugfindr/domain';
 
 export interface ConversationStore {
@@ -10,5 +12,7 @@ export interface ConversationStore {
   get(id: ConversationThreadId): Promise<ConversationThread | null>;
   getByIntroduction(id: IntroductionId): Promise<ConversationThread | null>;
   addMessage(message: ConversationMessage): Promise<ConversationMessage>;
+  getMessage(id: MessageId): Promise<ConversationMessage | null>;
+  markRead(id: MessageId, actorId: UserId, readAt: Date): Promise<ConversationMessage | null>;
   listMessages(id: ConversationThreadId): Promise<readonly ConversationMessage[]>;
 }
