@@ -2,7 +2,7 @@ import type { BusinessId, IntroductionId, RequestId } from './ids';
 import { asId } from './ids';
 import type { EngagementState } from './engagement';
 import type { Match } from './matching';
-import { ValidationError } from './errors';
+import { AuthorizationError, ValidationError } from './errors';
 import { transitionIntroduction } from './introduction';
 import type { IntroductionState, IntroductionStateChanged } from './introduction';
 import type { StateTransition } from './state-machine';
@@ -113,6 +113,9 @@ export function acceptIntroduction(
   actorId: string,
   now: Date,
 ): IntroductionAcceptance {
+  if (String(actorId) !== String(introduction.specialistId)) {
+    throw new AuthorizationError();
+  }
   if (now.getTime() > introduction.responseDueAt.getTime()) {
     throw new ValidationError('Introduction response window has expired');
   }
@@ -134,6 +137,9 @@ export function declineIntroduction(
   actorId: string,
   now: Date,
 ): StateTransition<IntroductionState, IntroductionStateChanged> {
+  if (String(actorId) !== String(introduction.specialistId)) {
+    throw new AuthorizationError();
+  }
   requireText(reason, 'Decline reason', 3, 500);
   return transitionIntroduction(introduction.state, 'declined', introduction.id, actorId, now);
 }

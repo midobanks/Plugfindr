@@ -8,6 +8,7 @@ export * from './specialist-profile';
 export * from './directory';
 export * from './matching';
 export * from './introductions';
+export * from './conversation';
 export * from './reviews';
 export * from './verification';
 export * from './introduction';

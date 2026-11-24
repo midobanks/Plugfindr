@@ -15,6 +15,9 @@ import type {
   Introduction,
   IntroductionId,
   IntroductionState,
+  ConversationMessage,
+  ConversationThread,
+  ConversationThreadId,
   Review,
   ReviewId,
   EngagementId,
@@ -34,6 +37,7 @@ import type { RequestReceipt, RequestStore } from './requests';
 import type { SpecialistProfileReceipt, SpecialistProfileStore } from './specialists';
 import type { MatchStore } from './matches';
 import type { IntroductionStore } from './introductions';
+import type { ConversationStore } from './conversations';
 import type { EngagementForStore, EngagementStore, ReviewStore } from './reviews';
 import type { CalendarProvider } from './calendar';
 import type { BookingLinkInput } from './calendar';
@@ -458,6 +462,35 @@ export class FakeIntroductionStore implements IntroductionStore {
     };
     this.introductions.set(id, next);
     return next;
+  }
+}
+
+export class FakeConversationStore implements ConversationStore {
+  private readonly threads = new Map<string, ConversationThread>();
+  private readonly messages = new Map<string, ConversationMessage>();
+
+  async open(thread: ConversationThread): Promise<ConversationThread> {
+    this.threads.set(thread.id, thread);
+    return thread;
+  }
+
+  async get(id: ConversationThreadId): Promise<ConversationThread | null> {
+    return this.threads.get(id) ?? null;
+  }
+
+  async getByIntroduction(id: IntroductionId): Promise<ConversationThread | null> {
+    return [...this.threads.values()].find((thread) => thread.introductionId === id) ?? null;
+  }
+
+  async addMessage(message: ConversationMessage): Promise<ConversationMessage> {
+    this.messages.set(message.id, message);
+    return message;
+  }
+
+  async listMessages(id: ConversationThreadId): Promise<readonly ConversationMessage[]> {
+    return [...this.messages.values()]
+      .filter((message) => message.threadId === id)
+      .sort((left, right) => left.createdAt.getTime() - right.createdAt.getTime());
   }
 }
 
