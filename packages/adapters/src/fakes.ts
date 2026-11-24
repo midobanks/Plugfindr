@@ -12,6 +12,9 @@ import type {
   MatchId,
   MatchStage,
   RequestId,
+  Introduction,
+  IntroductionId,
+  IntroductionState,
 } from '@plugfindr/domain';
 import type {
   EmailPasswordVerifier,
@@ -27,6 +30,7 @@ import type {
 import type { RequestReceipt, RequestStore } from './requests';
 import type { SpecialistProfileReceipt, SpecialistProfileStore } from './specialists';
 import type { MatchStore } from './matches';
+import type { IntroductionStore } from './introductions';
 import type { CalendarProvider } from './calendar';
 import type { BookingLinkInput } from './calendar';
 import type { KycCheckInput, KycCheckResult, KycProvider } from './kyc';
@@ -364,11 +368,53 @@ export class FakeSpecialistProfileStore implements SpecialistProfileStore {
   }
 }
 
+export class FakeIntroductionStore implements IntroductionStore {
+  private readonly introductions = new Map<string, Introduction>();
+
+  async create(introduction: Introduction): Promise<Introduction> {
+    this.introductions.set(introduction.id, introduction);
+    return introduction;
+  }
+
+  async get(id: IntroductionId): Promise<Introduction | null> {
+    return this.introductions.get(id) ?? null;
+  }
+
+  async recordState(
+    id: IntroductionId,
+    state: IntroductionState,
+    actorId: string,
+    occurredAt: Date,
+    details?: { readonly declineReason?: string; readonly conversationThreadId?: string },
+  ): Promise<Introduction | null> {
+    void actorId;
+    void occurredAt;
+    const current = this.introductions.get(id);
+    if (current === undefined) return null;
+    const next: Introduction = {
+      ...current,
+      state,
+      declineReason: details?.declineReason ?? current.declineReason,
+      conversationThreadId: details?.conversationThreadId ?? current.conversationThreadId,
+    };
+    this.introductions.set(id, next);
+    return next;
+  }
+}
+
 export class FakeMatchStore implements MatchStore {
   private readonly shortlists = new Map<string, Match[]>();
 
   async getShortlist(requestId: RequestId): Promise<readonly Match[]> {
     return [...(this.shortlists.get(requestId) ?? [])];
+  }
+
+  async getById(matchId: MatchId): Promise<Match | null> {
+    for (const matches of this.shortlists.values()) {
+      const found = matches.find((match) => match.matchId === matchId);
+      if (found !== undefined) return found;
+    }
+    return null;
   }
 
   async saveShortlist(requestId: RequestId, matches: readonly Match[]): Promise<void> {
