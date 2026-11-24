@@ -1,4 +1,5 @@
-export type DomainErrorCode = 'INVALID_TRANSITION' | 'VALIDATION_FAILED';
+export type DomainErrorCode =
+  'INVALID_TRANSITION' | 'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'FORBIDDEN';
 
 export class DomainError extends Error {
   readonly code: DomainErrorCode;
@@ -21,5 +22,19 @@ export class ValidationError extends DomainError {
   constructor(message: string) {
     super('VALIDATION_FAILED', message);
     this.name = 'ValidationError';
+  }
+}
+
+export class AuthenticationError extends DomainError {
+  constructor() {
+    super('UNAUTHENTICATED', 'Authentication is required');
+    this.name = 'AuthenticationError';
+  }
+}
+
+export class AuthorizationError extends DomainError {
+  constructor() {
+    super('FORBIDDEN', 'This action is not permitted');
+    this.name = 'AuthorizationError';
   }
 }

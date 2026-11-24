@@ -1,3 +1,16 @@
+import { asId, isSessionActive } from '@plugfindr/domain';
+import type { AuthMethod, Session, UserId, UserRole } from '@plugfindr/domain';
+import type {
+  EmailPasswordVerifier,
+  GoogleIdentity,
+  GoogleTokenVerifier,
+  OtpChallenge,
+  OtpProvider,
+  OtpRequest,
+  OtpVerificationResult,
+  RateLimiter,
+  SessionStore,
+} from './auth';
 import type { CalendarProvider } from './calendar';
 import type { BookingLinkInput } from './calendar';
 import type { KycCheckInput, KycCheckResult, KycProvider } from './kyc';
@@ -118,5 +131,181 @@ export class FakePaymentsProvider implements PaymentsProvider {
 export class FakeCalendarProvider implements CalendarProvider {
   async createBookingLink(input: BookingLinkInput): Promise<string> {
     return `fake://booking/${input.specialistId}/${input.businessId}`;
+  }
+}
+
+type StoredOtpChallenge = OtpChallenge & {
+  readonly destination: string;
+  readonly code: string;
+};
+
+export class FakeOtpProvider implements OtpProvider {
+  private readonly challenges = new Map<string, StoredOtpChallenge>();
+  private counter = 0;
+
+  async requestCode(input: OtpRequest): Promise<OtpChallenge> {
+    this.counter += 1;
+    const challenge: StoredOtpChallenge = {
+      id: `otp-fake-${this.counter}`,
+      destination: input.destination,
+      channel: input.channel,
+      purpose: input.purpose,
+      expiresAt: new Date(input.requestedAt.getTime() + 10 * 60 * 1000),
+      attemptsRemaining: 3,
+      code: '000000',
+    };
+    this.challenges.set(challenge.id, challenge);
+    return {
+      id: challenge.id,
+      channel: challenge.channel,
+      purpose: challenge.purpose,
+      expiresAt: challenge.expiresAt,
+      attemptsRemaining: challenge.attemptsRemaining,
+    };
+  }
+
+  async verifyCode(input: {
+    challengeId: string;
+    code: string;
+    attemptedAt: Date;
+  }): Promise<OtpVerificationResult | null> {
+    const challenge = this.challenges.get(input.challengeId);
+    if (
+      challenge === undefined ||
+      challenge.attemptsRemaining < 1 ||
+      input.attemptedAt >= challenge.expiresAt
+    ) {
+      return null;
+    }
+    if (input.code !== challenge.code) {
+      this.challenges.set(challenge.id, {
+        ...challenge,
+        attemptsRemaining: challenge.attemptsRemaining - 1,
+      });
+      return null;
+    }
+    this.challenges.delete(input.challengeId);
+    return {
+      destination: challenge.destination,
+      channel: challenge.channel,
+      purpose: challenge.purpose,
+    };
+  }
+
+  codeFor(challengeId: string): string | null {
+    return this.challenges.get(challengeId)?.code ?? null;
+  }
+}
+
+export class FakeGoogleTokenVerifier implements GoogleTokenVerifier {
+  async verifyIdToken(input: {
+    idToken: string;
+    audience: string;
+    now: Date;
+  }): Promise<GoogleIdentity | null> {
+    if (input.idToken !== 'valid-google-token' || input.audience.length === 0) {
+      return null;
+    }
+    return {
+      subject: 'google-fake-subject-001',
+      email: 'fake.user@example.test',
+      emailVerified: true,
+    };
+  }
+}
+
+export class FakeEmailPasswordVerifier implements EmailPasswordVerifier {
+  async verify(input: { email: string; password: string }): Promise<{
+    actorId: UserId;
+    role: UserRole;
+  } | null> {
+    if (input.password !== 'fake-password-for-tests') {
+      return null;
+    }
+    return {
+      actorId: asId<UserId>('user-fake-001'),
+      role: input.email.includes('specialist') ? 'specialist' : 'business',
+    };
+  }
+}
+
+export class FakeSessionStore implements SessionStore {
+  private readonly sessions = new Map<string, Session>();
+  private counter = 0;
+
+  async create(input: {
+    actorId: UserId;
+    role: UserRole;
+    method: AuthMethod;
+    createdAt: Date;
+    expiresAt: Date;
+    idleExpiresAt: Date;
+  }): Promise<Session> {
+    this.counter += 1;
+    const session: Session = {
+      id: `session-fake-${this.counter}`,
+      actorId: input.actorId,
+      role: input.role,
+      method: input.method,
+      createdAt: input.createdAt,
+      expiresAt: input.expiresAt,
+      idleExpiresAt: input.idleExpiresAt,
+    };
+    this.sessions.set(session.id, session);
+    return session;
+  }
+
+  async get(sessionId: string, now: Date): Promise<Session | null> {
+    const session = this.sessions.get(sessionId);
+    if (session === undefined) {
+      return null;
+    }
+    if (!isSessionActive(session, now)) {
+      this.sessions.delete(sessionId);
+      return null;
+    }
+    return session;
+  }
+
+  async touch(sessionId: string, now: Date, idleExpiresAt: Date): Promise<Session | null> {
+    const session = await this.get(sessionId, now);
+    if (session === null) {
+      return null;
+    }
+    const touched: Session = { ...session, idleExpiresAt };
+    this.sessions.set(sessionId, touched);
+    return touched;
+  }
+
+  async revoke(sessionId: string): Promise<void> {
+    this.sessions.delete(sessionId);
+  }
+}
+
+export class FakeRateLimiter implements RateLimiter {
+  private readonly hits = new Map<string, number[]>();
+
+  constructor(
+    private readonly limit = 5,
+    private readonly windowMs = 60_000,
+  ) {}
+
+  async check(input: { key: string; now: Date }): Promise<{
+    allowed: boolean;
+    retryAfterSeconds: number;
+  }> {
+    const cutoff = input.now.getTime() - this.windowMs;
+    const recent = (this.hits.get(input.key) ?? []).filter((time) => time > cutoff);
+    const oldest = recent[0];
+    if (oldest !== undefined && recent.length >= this.limit) {
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil((oldest + this.windowMs - input.now.getTime()) / 1000),
+      );
+      return { allowed: false, retryAfterSeconds };
+    }
+    recent.push(input.now.getTime());
+    this.hits.set(input.key, recent);
+    return { allowed: true, retryAfterSeconds: 0 };
   }
 }

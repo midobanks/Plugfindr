@@ -9,6 +9,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@plugfindr/adapters": "0.1.0",
+    "@plugfindr/domain": "0.1.0",
     "@plugfindr/ui": "0.1.0",
     "next": "16.4.6",
     "react": "19.3.1",

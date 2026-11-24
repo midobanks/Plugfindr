@@ -14,6 +14,12 @@ export const enNG = {
       support: 'The right specialist, without the endless search.',
     },
   },
+  errors: {
+    unauthenticated: 'Sign in to continue.',
+    forbidden: 'You do not have access to this resource.',
+    validation: 'Check the information you provided.',
+    internal: 'Something went wrong. Please try again.',
+  },
   about: {
     title: 'About Plugfindr',
     story: {

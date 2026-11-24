@@ -8,3 +8,4 @@ export * from './introduction';
 export * from './engagement';
 export * from './invariants';
 export * from './money';
+export * from './identity';

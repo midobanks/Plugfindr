@@ -2,6 +2,12 @@
   "name": "@plugfindr/database",
   "private": true,
   "version": "0.1.0",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
   "scripts": {
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
