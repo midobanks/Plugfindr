@@ -4,6 +4,7 @@ export * from './events';
 export * from './state-machine';
 export * from './request';
 export * from './request-brief';
+export * from './specialist-profile';
 export * from './verification';
 export * from './introduction';
 export * from './engagement';

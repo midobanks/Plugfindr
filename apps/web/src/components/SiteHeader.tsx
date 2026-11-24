@@ -29,6 +29,9 @@ export default function SiteHeader(): JSX.Element {
           <Link className="nav-link" href="/about">
             {enNG.nav.about}
           </Link>
+          <Link className="nav-link" href="/join">
+            {enNG.nav.join}
+          </Link>
           <Link className="nav-cta" href="/request">
             {enNG.request.cta}
           </Link>

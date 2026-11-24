@@ -4,6 +4,7 @@ export * from './search';
 export * from './storage';
 export * from './payments';
 export * from './requests';
+export * from './specialists';
 export * from './auth';
 export * from './calendar';
 export * from './fakes';

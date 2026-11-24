@@ -5,6 +5,9 @@ import type {
   UserId,
   UserRole,
   ValidatedRequestBrief,
+  ValidatedSpecialistProfile,
+  SpecialistId,
+  SpecialistProfileDraft,
 } from '@plugfindr/domain';
 import type {
   EmailPasswordVerifier,
@@ -18,6 +21,7 @@ import type {
   SessionStore,
 } from './auth';
 import type { RequestReceipt, RequestStore } from './requests';
+import type { SpecialistProfileReceipt, SpecialistProfileStore } from './specialists';
 import type { CalendarProvider } from './calendar';
 import type { BookingLinkInput } from './calendar';
 import type { KycCheckInput, KycCheckResult, KycProvider } from './kyc';
@@ -310,6 +314,43 @@ export class FakeRequestStore implements RequestStore {
 
   created(): readonly RequestReceipt[] {
     return this.receipts;
+  }
+}
+
+export class FakeSpecialistProfileStore implements SpecialistProfileStore {
+  private readonly drafts = new Map<string, SpecialistProfileDraft>();
+  private readonly receipts = new Map<string, SpecialistProfileReceipt>();
+
+  async saveDraft(input: {
+    specialistId: SpecialistId;
+    draft: SpecialistProfileDraft;
+    updatedAt: Date;
+  }): Promise<void> {
+    this.drafts.set(input.specialistId, input.draft);
+  }
+
+  async submit(input: {
+    specialistId: SpecialistId;
+    profile: ValidatedSpecialistProfile;
+    submittedAt: Date;
+    completeness: number;
+  }): Promise<SpecialistProfileReceipt> {
+    const receipt: SpecialistProfileReceipt = {
+      specialistId: input.specialistId,
+      status: 'pending',
+      submittedAt: input.submittedAt,
+      completeness: input.completeness,
+    };
+    this.receipts.set(input.specialistId, receipt);
+    return receipt;
+  }
+
+  async get(specialistId: SpecialistId): Promise<SpecialistProfileReceipt | null> {
+    return this.receipts.get(specialistId) ?? null;
+  }
+
+  draftFor(specialistId: SpecialistId): SpecialistProfileDraft | null {
+    return this.drafts.get(specialistId) ?? null;
   }
 }
 
