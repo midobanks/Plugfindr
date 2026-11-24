@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { InvalidTransitionError } from './errors';
+import { AuthorizationError, InvalidTransitionError } from './errors';
 import { asId } from './ids';
-import type { EngagementId } from './ids';
-import { transitionEngagement } from './engagement';
+import type { BusinessId, EngagementId, SpecialistId, UserId } from './ids';
+import { transitionEngagement, updateEngagementStatus } from './engagement';
+import type { EngagementForStatus } from './engagement';
 
 const engagementId = asId<EngagementId>('eng-001');
 const actorId = 'user-001';
@@ -46,5 +47,41 @@ describe('engagement state machine', () => {
     expect(() =>
       transitionEngagement('in_discussion', 'completed', engagementId, actorId, now),
     ).toThrow(InvalidTransitionError);
+  });
+});
+
+describe('engagement status updates', () => {
+  const businessId = asId<BusinessId>('business-fake-001');
+  const specialistId = asId<SpecialistId>('specialist-fake-001');
+  const engagement: EngagementForStatus = {
+    id: engagementId,
+    businessId,
+    specialistId,
+    state: 'in_progress',
+  };
+
+  it('accepts updates only from either party', () => {
+    expect(
+      updateEngagementStatus(engagement, 'completed', asId<UserId>('business-fake-001'), now)
+        .transition.state,
+    ).toBe('completed');
+    expect(
+      updateEngagementStatus(engagement, 'not_proceeding', asId<UserId>('specialist-fake-001'), now)
+        .transition.state,
+    ).toBe('not_proceeding');
+    expect(() =>
+      updateEngagementStatus(engagement, 'completed', asId<UserId>('user-fake-stranger'), now),
+    ).toThrow(AuthorizationError);
+  });
+
+  it('records completion time only on completion', () => {
+    expect(
+      updateEngagementStatus(engagement, 'completed', asId<UserId>('business-fake-001'), now)
+        .completedAt,
+    ).toEqual(now);
+    expect(
+      updateEngagementStatus(engagement, 'not_proceeding', asId<UserId>('business-fake-001'), now)
+        .completedAt,
+    ).toBeNull();
   });
 });

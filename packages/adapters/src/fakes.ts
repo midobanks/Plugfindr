@@ -379,6 +379,28 @@ export class FakeEngagementStore implements EngagementStore {
     return this.engagements.get(id) ?? null;
   }
 
+  async recordState(
+    id: EngagementId,
+    state: EngagementForStore['state'],
+    completedAt: Date | null,
+    actorId: string,
+    occurredAt: Date,
+  ): Promise<EngagementForStore | null> {
+    void actorId;
+    void occurredAt;
+    const current = this.engagements.get(id);
+    if (current === undefined) return null;
+    const next: EngagementForStore = { ...current, state, completedAt };
+    this.engagements.set(id, next);
+    return next;
+  }
+
+  async listForParty(actorId: string): Promise<readonly EngagementForStore[]> {
+    return [...this.engagements.values()].filter(
+      (engagement) => engagement.businessId === actorId || engagement.specialistId === actorId,
+    );
+  }
+
   put(engagement: EngagementForStore): void {
     this.engagements.set(engagement.id, engagement);
   }

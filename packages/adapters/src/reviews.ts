@@ -10,6 +10,14 @@ export type EngagementForStore = {
 
 export interface EngagementStore {
   get(id: EngagementId): Promise<EngagementForStore | null>;
+  recordState(
+    id: EngagementId,
+    state: EngagementState,
+    completedAt: Date | null,
+    actorId: string,
+    occurredAt: Date,
+  ): Promise<EngagementForStore | null>;
+  listForParty(actorId: string): Promise<readonly EngagementForStore[]>;
 }
 
 export interface ReviewStore {
