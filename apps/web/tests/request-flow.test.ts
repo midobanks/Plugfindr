@@ -82,6 +82,8 @@ describe('request flow', () => {
 
     const homeHtml = renderToStaticMarkup(createElement(HomePage));
     expect(homeHtml).toContain(escapeHtml(enNG.request.empty.title));
+    expect(homeHtml).toContain(enNG.home.steps.title);
+    expect(homeHtml).toContain(enNG.home.trust.title);
     expect(homeHtml).toContain(enNG.request.cta);
   });
 });

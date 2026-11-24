@@ -125,6 +125,11 @@ export default function RequestForm() {
       <p className="step-label" aria-live="polite">
         {enNG.request.steps.label.replace('{current}', String(step + 1)).replace('{total}', '3')}
       </p>
+      <div className="progress-track" aria-hidden="true">
+        {[0, 1, 2].map((index) => (
+          <span className={index <= step ? 'is-active' : undefined} key={index} />
+        ))}
+      </div>
 
       {step === 0 ? (
         <fieldset>

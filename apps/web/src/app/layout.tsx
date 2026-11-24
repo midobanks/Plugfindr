@@ -21,7 +21,9 @@ export default function RootLayout({ children }: { readonly children: ReactNode 
           {enNG.nav.skip}
         </a>
         <SiteHeader />
-        <main id="main">{children}</main>
+        <main id="main" className="band-light">
+          {children}
+        </main>
         <SiteFooter />
       </body>
     </html>

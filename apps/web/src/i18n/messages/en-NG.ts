@@ -6,12 +6,43 @@ export const enNG = {
   nav: {
     skip: 'Skip to content',
     about: 'About Plugfindr',
+    howItWorks: 'How it works',
     primaryLabel: 'Primary navigation',
   },
   home: {
     hero: {
+      eyebrow: 'Specialist discovery, done plainly',
       heading: 'Looking for someone who can get it done? Find your plug.',
       support: 'The right specialist, without the endless search.',
+      note: 'Shortlisted with care. Introduced with context.',
+      visualLabel: 'A connected network of independent specialists',
+    },
+    steps: {
+      title: 'From brief to introduction, without the noise.',
+      items: [
+        {
+          index: '01',
+          title: 'Tell us who you need',
+          body: 'Describe the outcome, timing and budget in a few guided questions.',
+        },
+        {
+          index: '02',
+          title: 'Get a shortlist with context',
+          body: 'We match your brief to specialists whose checks and experience fit.',
+        },
+        {
+          index: '03',
+          title: 'Meet the right plug',
+          body: 'See why each person fits, then start the conversation.',
+        },
+      ],
+    },
+    trust: {
+      title: 'Trust is the product.',
+      body: 'Verification is typed, time-bound and explained. You see what was checked, not just a badge.',
+      points: ['Clear checks', 'Honest badges', 'Human review'],
+      aside:
+        'No pay-to-win ranking. Every match comes with plain-language reasons you can read before you reply.',
     },
   },
   request: {
@@ -60,6 +91,10 @@ export const enNG = {
       ongoing_retainer: 'Ongoing retainer',
       advisory: 'Advisory',
       not_sure: 'Not sure yet',
+    },
+    aside: {
+      title: 'What happens next',
+      body: 'We use your answers to prepare a short, relevant shortlist. You will hear from us within 24 hours.',
     },
     status: {
       signingIn: 'Sign in to send a request.',
