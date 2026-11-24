@@ -101,6 +101,7 @@ export type AdminAuditAction =
   | 'match.update'
   | 'taxonomy.update'
   | 'review.remove'
+  | 'report.view'
   | 'report.resolve'
   | 'payment.refund'
   | 'audit.export';

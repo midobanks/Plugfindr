@@ -18,8 +18,9 @@ that conversation. Intake has no free-text field, is rate-limited per reporter, 
 report ID, status and timestamps. Each open report receives a 24-hour first-response deadline.
 
 Reports are stored through a `ReportStore` port with `open -> in_review -> resolved | dismissed`
-transitions in the domain. The queue endpoint, reviewer notes, evidence attachments and admin UI
-remain separate slices.
+transitions in the domain. The Trust queue endpoint lists open reports in SLA order for roles with
+`reports.read`, requires recent MFA, and writes a `report.view` audit event for every report shown.
+Reviewer notes, evidence attachments and the admin UI remain separate slices.
 
 ## Alternatives
 
@@ -32,7 +33,8 @@ remain separate slices.
 ## Consequences
 
 - Reports carry identifiers and a policy reason only; message bodies are never copied.
-- The 24-hour SLA is stored per report and can be surfaced by the future queue.
+- The 24-hour SLA is stored per report and the queue orders open reports by it.
 - Report retention, escalation, reviewer notes, evidence uploads and reporter status history remain
   open decisions.
-- Until the queue is connected, reports are persisted by the adapter but not visible to reviewers.
+- Queue reads require both the store and audit backend, so they fail closed rather than exposing
+  reports without an access trail.
