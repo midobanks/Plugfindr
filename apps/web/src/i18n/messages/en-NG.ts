@@ -175,6 +175,23 @@ export const enNG = {
       },
     ],
   },
+  matches: {
+    title: 'Your shortlist',
+    intro: 'A short, explained shortlist will appear here when matching is connected.',
+    emptyTitle: 'Shortlist is not ready yet',
+    emptySupport: 'Tell us who you need and we will put the shortlist together with you.',
+    emptyCta: 'Tell us who you need',
+    viewShortlist: 'View shortlist',
+    specialistLabel: 'Specialist',
+    why: 'Why this match',
+    stages: {
+      proposed: 'Awaiting specialist interest',
+      opted_in: 'Specialist interested',
+      confirmed: 'Confirmed',
+      declined: 'Declined',
+      expired: 'Expired',
+    },
+  },
   specialist: {
     title: 'Join the specialist network',
     intro: 'Build your profile once. We review it before you become discoverable to businesses.',

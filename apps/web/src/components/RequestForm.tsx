@@ -2,6 +2,7 @@
 
 import { REQUEST_CATEGORIES, REQUEST_SCOPE_TYPES } from '@plugfindr/domain';
 import type { RequestCategory, RequestScopeType } from '@plugfindr/domain';
+import Link from 'next/link';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { enNG } from '../i18n/messages/en-NG';
@@ -115,7 +116,14 @@ export default function RequestForm() {
       <section className="request-confirmation" aria-live="polite">
         <h2>{enNG.request.status.sent}</h2>
         <p>{status}</p>
-        {receiptId.length > 0 ? <p className="receipt">{receiptId}</p> : null}
+        {receiptId.length > 0 ? (
+          <>
+            <p className="receipt">{receiptId}</p>
+            <Link className="text-link" href={`/requests/${encodeURIComponent(receiptId)}/matches`}>
+              {enNG.matches.viewShortlist}
+            </Link>
+          </>
+        ) : null}
       </section>
     );
   }

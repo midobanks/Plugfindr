@@ -8,6 +8,10 @@ import type {
   ValidatedSpecialistProfile,
   SpecialistId,
   SpecialistProfileDraft,
+  Match,
+  MatchId,
+  MatchStage,
+  RequestId,
 } from '@plugfindr/domain';
 import type {
   EmailPasswordVerifier,
@@ -22,6 +26,7 @@ import type {
 } from './auth';
 import type { RequestReceipt, RequestStore } from './requests';
 import type { SpecialistProfileReceipt, SpecialistProfileStore } from './specialists';
+import type { MatchStore } from './matches';
 import type { CalendarProvider } from './calendar';
 import type { BookingLinkInput } from './calendar';
 import type { KycCheckInput, KycCheckResult, KycProvider } from './kyc';
@@ -356,6 +361,34 @@ export class FakeSpecialistProfileStore implements SpecialistProfileStore {
 
   draftFor(specialistId: SpecialistId): SpecialistProfileDraft | null {
     return this.drafts.get(specialistId) ?? null;
+  }
+}
+
+export class FakeMatchStore implements MatchStore {
+  private readonly shortlists = new Map<string, Match[]>();
+
+  async getShortlist(requestId: RequestId): Promise<readonly Match[]> {
+    return [...(this.shortlists.get(requestId) ?? [])];
+  }
+
+  async saveShortlist(requestId: RequestId, matches: readonly Match[]): Promise<void> {
+    this.shortlists.set(requestId, [...matches]);
+  }
+
+  async recordStage(
+    matchId: MatchId,
+    stage: MatchStage,
+    actorId: string,
+    occurredAt: Date,
+  ): Promise<void> {
+    void actorId;
+    void occurredAt;
+    for (const [requestId, matches] of this.shortlists) {
+      const next = matches.map((match) =>
+        match.matchId === matchId ? { ...match, stage } : match,
+      );
+      this.shortlists.set(requestId, next);
+    }
   }
 }
 

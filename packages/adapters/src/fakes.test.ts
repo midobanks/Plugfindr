@@ -1,7 +1,12 @@
 import { asId, asKobo } from '@plugfindr/domain';
-import type { SpecialistId } from '@plugfindr/domain';
+import type { Match, MatchId, RequestId, SpecialistId } from '@plugfindr/domain';
 import { describe, expect, it } from 'vitest';
-import { FakeMessagingProvider, FakeSearchService, FakeStorageProvider } from './fakes';
+import {
+  FakeMatchStore,
+  FakeMessagingProvider,
+  FakeSearchService,
+  FakeStorageProvider,
+} from './fakes';
 
 const specialistId = asId<SpecialistId>('specialist-fake-001');
 
@@ -64,5 +69,24 @@ describe('adapter fakes', () => {
     const storage = new FakeStorageProvider();
     const url = await storage.createSignedUrl('private/verification/doc', 60);
     expect(url.startsWith('fake://signed/')).toBe(true);
+  });
+
+  it('stores shortlists and records opt-in stages', async () => {
+    const store = new FakeMatchStore();
+    const requestId = asId<RequestId>('request-fake-001');
+    const match: Match = {
+      matchId: asId<MatchId>('request-fake-001:specialist-fake-001'),
+      requestId,
+      specialistId,
+      score: 90,
+      stage: 'proposed',
+      reasons: [],
+      scoreBreakdown: [],
+    };
+
+    await store.saveShortlist(requestId, [match]);
+    await store.recordStage(match.matchId, 'opted_in', 'actor-fake-001', new Date(0));
+
+    expect((await store.getShortlist(requestId))[0]?.stage).toBe('opted_in');
   });
 });
