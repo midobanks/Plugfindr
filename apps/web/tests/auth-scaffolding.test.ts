@@ -12,7 +12,11 @@ function makeStore() {
   return new FakeSessionStore();
 }
 
-async function makeSession(store: FakeSessionStore, role: 'business' | 'admin' = 'business') {
+async function makeSession(
+  store: FakeSessionStore,
+  role: 'business' | 'admin' = 'business',
+  mfaVerifiedAt: Date | null = role === 'admin' ? now : null,
+) {
   return store.create({
     actorId: asId<UserId>('user-fake-001'),
     role,
@@ -20,6 +24,7 @@ async function makeSession(store: FakeSessionStore, role: 'business' | 'admin' =
     createdAt: now,
     expiresAt: new Date('2027-03-13T00:00:00Z'),
     idleExpiresAt: new Date('2027-03-12T06:00:00Z'),
+    mfaVerifiedAt,
   });
 }
 
@@ -54,6 +59,15 @@ describe('web auth scaffolding', () => {
     ).rejects.toThrow(AuthorizationError);
     await expect(requireAdminSession(store, `pf_session=${adminSession.id}`, now)).resolves.toEqual(
       adminSession,
+    );
+  });
+
+  it('rejects admin sessions without a recent MFA check', async () => {
+    const store = makeStore();
+    const session = await makeSession(store, 'admin', null);
+
+    await expect(requireAdminSession(store, `pf_session=${session.id}`, now)).rejects.toThrow(
+      'Authentication is required',
     );
   });
 

@@ -21,6 +21,7 @@ export type Session = {
   readonly expiresAt: Date;
   readonly idleExpiresAt: Date;
   readonly method: AuthMethod;
+  readonly mfaVerifiedAt?: Date | null;
 };
 
 export const ADMIN_ROLES = [

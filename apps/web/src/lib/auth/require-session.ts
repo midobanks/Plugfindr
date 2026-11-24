@@ -1,5 +1,5 @@
 import type { SessionStore } from '@plugfindr/adapters';
-import { ADMIN_ROLES, AuthenticationError, requireRole } from '@plugfindr/domain';
+import { AuthenticationError, requireAdminAccess } from '@plugfindr/domain';
 import type { Session } from '@plugfindr/domain';
 import { readSessionIdFromCookieHeader } from './session-cookie';
 
@@ -25,5 +25,5 @@ export async function requireAdminSession(
   now: Date = new Date(),
 ): Promise<Session> {
   const session = await requireSession(store, cookieHeader, now);
-  return requireRole(session, ADMIN_ROLES, now);
+  return requireAdminAccess(session, now).session;
 }

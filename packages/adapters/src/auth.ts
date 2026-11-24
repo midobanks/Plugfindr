@@ -62,6 +62,7 @@ export interface SessionStore {
     createdAt: Date;
     expiresAt: Date;
     idleExpiresAt: Date;
+    mfaVerifiedAt?: Date | null;
   }): Promise<Session>;
   get(sessionId: string, now: Date): Promise<Session | null>;
   touch(sessionId: string, now: Date, idleExpiresAt: Date): Promise<Session | null>;

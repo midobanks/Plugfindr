@@ -11,5 +11,6 @@ export * from './conversations';
 export * from './reviews';
 export * from './specialists';
 export * from './auth';
+export * from './audit';
 export * from './calendar';
 export * from './fakes';

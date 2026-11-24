@@ -1,5 +1,7 @@
 import { asId, isSessionActive } from '@plugfindr/domain';
 import type {
+  AdminAuditEvent,
+  AdminAuditTargetType,
   AuthMethod,
   BusinessId,
   Session,
@@ -36,6 +38,7 @@ import type {
   RateLimiter,
   SessionStore,
 } from './auth';
+import type { AuditStore } from './audit';
 import type { RequestReceipt, RequestStore } from './requests';
 import type { SpecialistProfileReceipt, SpecialistProfileStore } from './specialists';
 import type { MatchStore } from './matches';
@@ -277,6 +280,7 @@ export class FakeSessionStore implements SessionStore {
     createdAt: Date;
     expiresAt: Date;
     idleExpiresAt: Date;
+    mfaVerifiedAt?: Date | null;
   }): Promise<Session> {
     this.counter += 1;
     const session: Session = {
@@ -287,6 +291,7 @@ export class FakeSessionStore implements SessionStore {
       createdAt: input.createdAt,
       expiresAt: input.expiresAt,
       idleExpiresAt: input.idleExpiresAt,
+      mfaVerifiedAt: input.mfaVerifiedAt ?? null,
     };
     this.sessions.set(session.id, session);
     return session;
@@ -316,6 +321,24 @@ export class FakeSessionStore implements SessionStore {
 
   async revoke(sessionId: string): Promise<void> {
     this.sessions.delete(sessionId);
+  }
+}
+
+export class FakeAuditStore implements AuditStore {
+  private readonly events: AdminAuditEvent[] = [];
+
+  async append(event: AdminAuditEvent): Promise<AdminAuditEvent> {
+    this.events.push(event);
+    return event;
+  }
+
+  async listForTarget(
+    targetType: AdminAuditTargetType,
+    targetId: string,
+  ): Promise<readonly AdminAuditEvent[]> {
+    return this.events.filter(
+      (event) => event.targetType === targetType && event.targetId === targetId,
+    );
   }
 }
 
