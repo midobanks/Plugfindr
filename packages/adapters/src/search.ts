@@ -1,11 +1,6 @@
-export type PublicSpecialistDocument = {
-  readonly specialistId: string;
-  readonly headline: string;
-  readonly skills: readonly string[];
-  readonly location: string | null;
-  readonly availability: string | null;
-  readonly badgeTypes: readonly string[];
-};
+import type { PublicSpecialist } from '@plugfindr/domain';
+
+export type PublicSpecialistDocument = PublicSpecialist;
 
 export type SearchFilters = {
   readonly category?: string;

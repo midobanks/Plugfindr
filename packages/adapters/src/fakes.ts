@@ -75,13 +75,18 @@ export class FakeSearchService implements SearchService {
     const results: PublicSpecialistDocument[] = [];
     for (const document of this.documents.values()) {
       if (filters?.availableOnly === true && document.availability !== 'available_now') continue;
+      if (filters?.category !== undefined && document.category !== filters.category) {
+        continue;
+      }
       if (
         filters?.location !== undefined &&
         document.location?.toLowerCase() !== filters.location.toLowerCase()
       ) {
         continue;
       }
-      const haystack = [document.headline, ...document.skills].join(' ').toLowerCase();
+      const haystack = [document.name, document.headline, ...document.skills]
+        .join(' ')
+        .toLowerCase();
       if (needle.length > 0 && !haystack.includes(needle)) continue;
       results.push(document);
     }

@@ -23,6 +23,9 @@ export default function SiteHeader(): JSX.Element {
           />
         </Link>
         <nav className="site-nav" aria-label={enNG.nav.primaryLabel}>
+          <Link className="nav-link" href="/specialists">
+            {enNG.nav.browse}
+          </Link>
           <Link className="nav-link" href="/#how-it-works">
             {enNG.nav.howItWorks}
           </Link>
