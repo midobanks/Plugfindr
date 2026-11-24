@@ -15,6 +15,9 @@ import type {
   Introduction,
   IntroductionId,
   IntroductionState,
+  Review,
+  ReviewId,
+  EngagementId,
 } from '@plugfindr/domain';
 import type {
   EmailPasswordVerifier,
@@ -31,6 +34,7 @@ import type { RequestReceipt, RequestStore } from './requests';
 import type { SpecialistProfileReceipt, SpecialistProfileStore } from './specialists';
 import type { MatchStore } from './matches';
 import type { IntroductionStore } from './introductions';
+import type { EngagementForStore, EngagementStore, ReviewStore } from './reviews';
 import type { CalendarProvider } from './calendar';
 import type { BookingLinkInput } from './calendar';
 import type { KycCheckInput, KycCheckResult, KycProvider } from './kyc';
@@ -365,6 +369,39 @@ export class FakeSpecialistProfileStore implements SpecialistProfileStore {
 
   draftFor(specialistId: SpecialistId): SpecialistProfileDraft | null {
     return this.drafts.get(specialistId) ?? null;
+  }
+}
+
+export class FakeEngagementStore implements EngagementStore {
+  private readonly engagements = new Map<string, EngagementForStore>();
+
+  async get(id: EngagementId): Promise<EngagementForStore | null> {
+    return this.engagements.get(id) ?? null;
+  }
+
+  put(engagement: EngagementForStore): void {
+    this.engagements.set(engagement.id, engagement);
+  }
+}
+
+export class FakeReviewStore implements ReviewStore {
+  private readonly reviews = new Map<string, Review>();
+
+  async create(review: Review): Promise<Review> {
+    this.reviews.set(review.id, review);
+    return review;
+  }
+
+  async listForSpecialist(specialistId: string): Promise<readonly Review[]> {
+    return [...this.reviews.values()].filter((review) => review.specialistId === specialistId);
+  }
+
+  async listForEngagement(id: EngagementId): Promise<readonly Review[]> {
+    return [...this.reviews.values()].filter((review) => review.engagementId === id);
+  }
+
+  async get(id: ReviewId): Promise<Review | null> {
+    return this.reviews.get(id) ?? null;
   }
 }
 
