@@ -1,6 +1,7 @@
 import { asId, isSessionActive } from '@plugfindr/domain';
 import type {
   AuthMethod,
+  BusinessId,
   Session,
   UserId,
   UserRole,
@@ -9,6 +10,8 @@ import type {
   SpecialistId,
   SpecialistProfileDraft,
   Match,
+  MatchFeedback,
+  MatchFeedbackId,
   MatchId,
   MatchStage,
   RequestId,
@@ -36,6 +39,7 @@ import type {
 import type { RequestReceipt, RequestStore } from './requests';
 import type { SpecialistProfileReceipt, SpecialistProfileStore } from './specialists';
 import type { MatchStore } from './matches';
+import type { MatchFeedbackStore } from './match-feedback';
 import type { IntroductionStore } from './introductions';
 import type { ConversationStore } from './conversations';
 import type { EngagementForStore, EngagementStore, ReviewStore } from './reviews';
@@ -501,6 +505,8 @@ export class FakeMatchStore implements MatchStore {
     return [...(this.shortlists.get(requestId) ?? [])];
   }
 
+  private readonly owners = new Map<string, BusinessId>();
+
   async getById(matchId: MatchId): Promise<Match | null> {
     for (const matches of this.shortlists.values()) {
       const found = matches.find((match) => match.matchId === matchId);
@@ -509,8 +515,21 @@ export class FakeMatchStore implements MatchStore {
     return null;
   }
 
-  async saveShortlist(requestId: RequestId, matches: readonly Match[]): Promise<void> {
+  async getOwner(matchId: MatchId): Promise<BusinessId | null> {
+    return this.owners.get(matchId) ?? null;
+  }
+
+  async saveShortlist(
+    requestId: RequestId,
+    matches: readonly Match[],
+    businessId?: BusinessId,
+  ): Promise<void> {
     this.shortlists.set(requestId, [...matches]);
+    if (businessId !== undefined) {
+      for (const match of matches) {
+        this.owners.set(match.matchId, businessId);
+      }
+    }
   }
 
   async recordStage(
@@ -527,6 +546,27 @@ export class FakeMatchStore implements MatchStore {
       );
       this.shortlists.set(requestId, next);
     }
+  }
+}
+
+export class FakeMatchFeedbackStore implements MatchFeedbackStore {
+  private readonly feedback = new Map<string, MatchFeedback>();
+
+  async create(feedback: MatchFeedback): Promise<MatchFeedback> {
+    this.feedback.set(feedback.id, feedback);
+    return feedback;
+  }
+
+  async get(id: MatchFeedbackId): Promise<MatchFeedback | null> {
+    return this.feedback.get(id) ?? null;
+  }
+
+  async listForMatch(id: MatchId): Promise<readonly MatchFeedback[]> {
+    return [...this.feedback.values()].filter((feedback) => feedback.matchId === id);
+  }
+
+  async listForRequest(id: RequestId): Promise<readonly MatchFeedback[]> {
+    return [...this.feedback.values()].filter((feedback) => feedback.requestId === id);
   }
 }
 

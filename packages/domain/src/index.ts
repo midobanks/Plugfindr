@@ -7,6 +7,7 @@ export * from './request-brief';
 export * from './specialist-profile';
 export * from './directory';
 export * from './matching';
+export * from './match-feedback';
 export * from './introductions';
 export * from './conversation';
 export * from './reviews';
