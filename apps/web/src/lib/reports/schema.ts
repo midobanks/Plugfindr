@@ -8,6 +8,10 @@ export type ParsedReportInput = {
   readonly reason: ReportReason;
 };
 
+export type ParsedReportStatus = {
+  readonly status: 'in_review' | 'resolved' | 'dismissed';
+};
+
 const reportSchema = z
   .object({
     targetType: z.enum(REPORT_TARGET_TYPES),
@@ -16,10 +20,24 @@ const reportSchema = z
   })
   .strict();
 
+const reportStatusSchema = z
+  .object({
+    status: z.enum(['in_review', 'resolved', 'dismissed']),
+  })
+  .strict();
+
 export function parseReportInput(raw: unknown): ParsedReportInput {
   const result = reportSchema.safeParse(raw);
   if (!result.success) {
     throw new ValidationError('Check the report details');
+  }
+  return result.data;
+}
+
+export function parseReportStatusInput(raw: unknown): ParsedReportStatus {
+  const result = reportStatusSchema.safeParse(raw);
+  if (!result.success) {
+    throw new ValidationError('Choose a valid report status');
   }
   return result.data;
 }

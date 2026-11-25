@@ -20,7 +20,9 @@ report ID, status and timestamps. Each open report receives a 24-hour first-resp
 Reports are stored through a `ReportStore` port with `open -> in_review -> resolved | dismissed`
 transitions in the domain. The Trust queue endpoint lists open reports in SLA order for roles with
 `reports.read`, requires recent MFA, and writes a `report.view` audit event for every report shown.
-Reviewer notes, evidence attachments and the admin UI remain separate slices.
+Roles with `moderation.manage` can move reports through review, resolution or dismissal, with audit
+events for each status change. Reviewer notes, evidence attachments and the admin UI remain separate
+slices.
 
 ## Alternatives
 

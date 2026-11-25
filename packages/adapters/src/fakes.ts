@@ -358,6 +358,11 @@ export class FakeReportStore implements ReportStore {
     return this.reports.get(id) ?? null;
   }
 
+  async update(report: Report): Promise<Report> {
+    this.reports.set(report.id, report);
+    return report;
+  }
+
   async listByReporter(reporterId: UserId): Promise<readonly Report[]> {
     return [...this.reports.values()].filter((report) => report.reporterId === reporterId);
   }
